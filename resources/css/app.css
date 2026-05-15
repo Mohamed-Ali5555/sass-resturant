@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        @apply h-full scroll-smooth antialiased;
+    }
+
+    html.dark,
+    html.dark body {
+        color-scheme: dark;
+    }
+
+    body {
+        @apply min-h-full font-sans text-slate-100;
+        background: radial-gradient(ellipse 110% 75% at 50% -18%, rgba(34, 211, 238, 0.16), transparent),
+            linear-gradient(180deg, #042f2e 0%, #0c1a22 45%, #020617 100%);
+        background-attachment: fixed;
+    }
+
+    /* Landing / public pages use the food-warm gradient */
+    body.page-landing {
+        background: radial-gradient(ellipse 130% 80% at 65% -25%, rgba(249,115,22,0.20), transparent 55%),
+                    radial-gradient(ellipse 70% 50% at -5% 100%, rgba(251,146,60,0.12), transparent 50%),
+                    linear-gradient(170deg, #0d0f1a 0%, #09090f 55%, #050508 100%);
+        background-attachment: fixed;
+    }
+
+    /* Kitchen display — ultra-dark for readability */
+    body.page-kitchen {
+        background: #06070d;
+        background-attachment: fixed;
+    }
+}
+
+@layer components {
+    /* ─── Glass panels ─────────────────────────────── */
+    .glass-panel {
+        @apply rounded-2xl border border-cyan-400/20 bg-slate-950/50 shadow-glow backdrop-blur-xl;
+    }
+    .glass-panel-soft {
+        @apply rounded-2xl border border-white/10 bg-slate-950/35 shadow-lg backdrop-blur-lg;
+    }
+    .glass-panel-orange {
+        @apply rounded-2xl border border-brand-500/25 bg-slate-950/55 shadow-glow-orange backdrop-blur-xl;
+    }
+
+    /* ─── Nav ──────────────────────────────────────── */
+    .glass-nav {
+        @apply border-b border-cyan-400/15 bg-slate-950/45 shadow-glow-sm backdrop-blur-2xl;
+    }
+    .glass-page-header {
+        @apply border-b border-cyan-400/10 bg-slate-950/30 backdrop-blur-xl;
+    }
+
+    /* ─── Buttons ──────────────────────────────────── */
+    .btn-neon {
+        @apply border border-cyan-400/35 bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-glow-sm transition
+               hover:from-cyan-500 hover:to-teal-500
+               focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:ring-offset-2 focus:ring-offset-slate-950;
+    }
+    .btn-orange {
+        @apply inline-flex items-center justify-center rounded-xl border border-brand-500/40
+               bg-gradient-to-r from-brand-600 to-orange-500 px-5 py-2.5 text-sm font-semibold text-white
+               shadow-glow-orange-sm transition
+               hover:from-brand-500 hover:to-orange-400
+               focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:ring-offset-2 focus:ring-offset-slate-950;
+    }
+    .btn-ghost {
+        @apply inline-flex items-center justify-center rounded-xl border border-white/15 px-5 py-2.5 text-sm
+               font-medium text-slate-300 transition
+               hover:border-white/30 hover:bg-white/5 hover:text-white;
+    }
+
+    /* ─── Form fields ──────────────────────────────── */
+    .ui-field {
+        @apply rounded-xl border border-cyan-400/20 bg-slate-950/50 text-slate-100 shadow-inner backdrop-blur-md
+               placeholder:text-slate-500
+               focus:border-cyan-400/55 focus:outline-none focus:ring-2 focus:ring-cyan-400/25;
+        padding: 0.5rem 0.75rem;
+    }
+
+    /* ─── Scrollbars ───────────────────────────────── */
+    .hub-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(34, 211, 238, 0.35) transparent;
+    }
+    .kitchen-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(249, 115, 22, 0.30) transparent;
+    }
+
+    /* ─── Hub page headers ─────────────────────────── */
+    .hub-page-header h1,
+    .hub-page-header .hub-h1 {
+        @apply text-2xl font-semibold tracking-tight text-white sm:text-3xl;
+    }
+    .hub-page-header p,
+    .hub-page-header .hub-sub {
+        @apply mt-1 max-w-2xl text-sm leading-relaxed text-slate-400;
+    }
+
+    /* ─── Stat / summary cards ─────────────────────── */
+    .hub-stat-card {
+        @apply glass-panel-soft relative overflow-hidden p-5 ring-1 ring-cyan-400/10;
+    }
+    .hub-table-wrap {
+        @apply glass-panel overflow-hidden shadow-glow;
+    }
+
+    /* ─── Landing page ─────────────────────────────── */
+    .land-section {
+        @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+    .land-badge {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-brand-500/30
+               bg-brand-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-400;
+    }
+    .land-h1 {
+        @apply font-display text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl;
+    }
+    .land-h2 {
+        @apply font-display text-3xl font-bold tracking-tight text-white sm:text-4xl;
+    }
+    .land-feature-card {
+        @apply relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6
+               transition duration-300 hover:border-brand-500/30 hover:bg-brand-500/[0.05]
+               hover:shadow-glow-orange-sm;
+    }
+
+    /* ─── Pricing cards ─────────────────────────────── */
+    .price-card {
+        @apply relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035]
+               p-8 transition duration-300;
+    }
+    .price-card-popular {
+        @apply border-brand-500/50 bg-brand-500/[0.07] shadow-glow-orange;
+    }
+
+    /* ─── Kitchen KDS ───────────────────────────────── */
+    .kds-card {
+        @apply relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80
+               backdrop-blur-sm transition duration-200;
+    }
+    .kds-card-new {
+        @apply border-amber-500/60 shadow-glow-amber;
+    }
+    .kds-card-preparing {
+        @apply border-blue-500/40;
+    }
+    .kds-card-ready {
+        @apply border-emerald-500/60 shadow-glow-green;
+    }
+    .kds-column-new {
+        @apply border-t-4 border-amber-500;
+    }
+    .kds-column-preparing {
+        @apply border-t-4 border-blue-500;
+    }
+    .kds-column-ready {
+        @apply border-t-4 border-emerald-500;
+    }
+    .kds-btn {
+        @apply inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3
+               text-sm font-bold tracking-wide transition duration-150 active:scale-95;
+    }
+    .kds-btn-start {
+        @apply kds-btn bg-gradient-to-r from-amber-600 to-orange-500 text-white
+               hover:from-amber-500 hover:to-orange-400;
+    }
+    .kds-btn-ready {
+        @apply kds-btn bg-gradient-to-r from-blue-600 to-indigo-600 text-white
+               hover:from-blue-500 hover:to-indigo-500;
+    }
+    .kds-btn-done {
+        @apply kds-btn bg-gradient-to-r from-emerald-600 to-teal-600 text-white
+               hover:from-emerald-500 hover:to-teal-500;
+    }
+    .kds-timer-urgent {
+        @apply text-red-400 font-bold animate-pulse;
+    }
+    .kds-timer-warning {
+        @apply text-amber-400 font-semibold;
+    }
+    .kds-timer-ok {
+        @apply text-slate-400;
+    }
+
+    /* ─── POS ───────────────────────────────────────── */
+    .pos-item-card {
+        @apply relative flex cursor-pointer flex-col items-center gap-2 overflow-hidden rounded-2xl
+               border border-white/10 bg-white/[0.04] p-3 text-center transition duration-150
+               hover:border-brand-500/40 hover:bg-brand-500/[0.07] active:scale-95;
+    }
+    .pos-item-card-unavailable {
+        @apply opacity-40 cursor-not-allowed pointer-events-none;
+    }
+    .pos-cart-row {
+        @apply flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3;
+    }
+}
+
+/* ─── Smooth page transitions ─────────────────────────────── */
+@layer utilities {
+    .text-gradient-orange {
+        @apply bg-gradient-to-r from-brand-400 to-orange-300 bg-clip-text text-transparent;
+    }
+    .text-gradient-cyan {
+        @apply bg-gradient-to-r from-cyan-400 to-teal-300 bg-clip-text text-transparent;
+    }
+    .bg-mesh-orange {
+        background-image:
+            radial-gradient(at 80% 0%, rgba(249,115,22,0.18) 0px, transparent 50%),
+            radial-gradient(at 0% 100%, rgba(251,146,60,0.12) 0px, transparent 50%);
+    }
+    .animate-new-order {
+        animation: newOrderPulse 1s ease-out;
+    }
+    @keyframes newOrderPulse {
+        0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.7); }
+        70% { box-shadow: 0 0 0 12px rgba(251,191,36,0); }
+        100% { box-shadow: 0 0 0 0 rgba(251,191,36,0); }
+    }
+}
