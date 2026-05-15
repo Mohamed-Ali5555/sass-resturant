@@ -11,25 +11,81 @@ $width = match ($width) {
     '48' => 'w-48',
     default => $width,
 };
+
+$dropdownId = 'dropdown-' . uniqid();
 @endphp
 
-<div class="relative" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false">
-    <div @click="open = ! open">
+<div class="relative" id="{{ $dropdownId }}">
+    <div data-dropdown-trigger>
         {{ $trigger }}
     </div>
 
-    <div x-show="open"
-            x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
+    <div data-dropdown-menu
             class="absolute z-50 mt-2 {{ $width }} rounded-xl shadow-glow {{ $alignmentClasses }}"
-            style="display: none;"
-            @click="open = false">
+            style="display: none;">
         <div class="rounded-xl ring-1 ring-cyan-400/10 {{ $contentClasses }}">
             {{ $content }}
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropdown = document.getElementById('{{ $dropdownId }}');
+        if (!dropdown) return;
+
+        const trigger = dropdown.querySelector('[data-dropdown-trigger]');
+        const menu = dropdown.querySelector('[data-dropdown-menu]');
+        let isOpen = false;
+
+        function toggleOpen() {
+            isOpen = !isOpen;
+            menu.style.display = isOpen ? 'block' : 'none';
+        }
+
+        function closeMenu() {
+            isOpen = false;
+            menu.style.display = 'none';
+        }
+
+        // Toggle on trigger click
+        if (trigger) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleOpen();
+            });
+
+            // Make the trigger clickable
+            const buttons = trigger.querySelectorAll('button, a');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleOpen();
+                });
+            });
+        }
+
+        // Close on menu item click
+        if (menu) {
+            menu.addEventListener('click', (e) => {
+                if (e.target !== menu) {
+                    closeMenu();
+                }
+            });
+        }
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && isOpen) {
+                closeMenu();
+            }
+        });
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen) {
+                closeMenu();
+            }
+        });
+    });
+</script>

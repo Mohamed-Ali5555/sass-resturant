@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="glass-nav sticky top-0 z-50">
+<nav id="mainNav" class="glass-nav sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center gap-3">
@@ -60,17 +60,19 @@
             </div>
 
             <div class="-me-2 flex items-center sm:hidden">
-                <button type="button" @click="open = ! open" class="inline-flex items-center justify-center rounded-xl border border-cyan-400/25 bg-slate-950/50 p-2 text-cyan-200 shadow-glow-sm backdrop-blur-md hover:bg-cyan-500/10 focus:outline-none focus:ring-2 focus:ring-cyan-400/40">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <button id="mobileMenuToggle" type="button" class="inline-flex items-center justify-center rounded-xl border border-cyan-400/25 bg-slate-950/50 p-2 text-cyan-200 shadow-glow-sm backdrop-blur-md hover:bg-cyan-500/10 focus:outline-none focus:ring-2 focus:ring-cyan-400/40">
+                    <svg id="menuIcon" class="h-6 w-6 inline-flex" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg id="closeIcon" class="h-6 w-6 hidden" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden border-t border-cyan-400/10 bg-slate-950/70 backdrop-blur-xl sm:hidden">
+    <div id="mobileMenu" class="hidden border-t border-cyan-400/10 bg-slate-950/70 backdrop-blur-xl sm:hidden">
         <div class="space-y-1 px-2 pt-2 pb-3">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
@@ -111,3 +113,43 @@
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const menuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon = document.getElementById('menuIcon');
+        const closeIcon = document.getElementById('closeIcon');
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            if (isMenuOpen) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('block');
+                menuIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            } else {
+                mobileMenu.classList.remove('block');
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
+
+        if (menuToggle) {
+            menuToggle.addEventListener('click', toggleMenu);
+        }
+
+        // Close menu when a link is clicked
+        const navLinks = mobileMenu.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (isMenuOpen) {
+                    isMenuOpen = true;
+                    toggleMenu();
+                }
+            });
+        });
+    });
+</script>

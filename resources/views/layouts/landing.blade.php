@@ -13,7 +13,7 @@
 <body class="page-landing font-hub antialiased text-slate-100">
 
     {{-- ── Navigation ────────────────────────────────── --}}
-    <nav x-data="{ open: false }" class="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#07080f]/80 backdrop-blur-2xl">
+    <nav class="fixed inset-x-0 top-0 z-50 border-b border-white/8 bg-[#07080f]/80 backdrop-blur-2xl">
         <div class="land-section flex h-16 items-center justify-between">
             <a href="{{ url('/') }}" class="flex items-center gap-2.5">
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-orange-600 shadow-glow-orange-sm">

@@ -36,13 +36,26 @@
 
             @if (session('status') === 'password-updated')
                 <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-slate-400"
+                    id="passwordSuccessMessage"
+                    class="text-sm text-slate-400 transition-opacity duration-300"
                 >{{ __('Saved.') }}</p>
             @endif
         </div>
     </form>
+
+    @if (session('status') === 'password-updated')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const message = document.getElementById('passwordSuccessMessage');
+                if (message) {
+                    setTimeout(() => {
+                        message.style.opacity = '0';
+                        setTimeout(() => {
+                            message.style.display = 'none';
+                        }, 300);
+                    }, 2000);
+                }
+            });
+        </script>
+    @endif
 </section>

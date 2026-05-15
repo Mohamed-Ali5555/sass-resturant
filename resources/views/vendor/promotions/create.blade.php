@@ -23,20 +23,20 @@
                     @error('code') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
                 </div>
 
-                <div x-data="{ dtype: '{{ old('discount_type', 'percent') }}' }">
+                <div id="discountTypeContainer">
                     <label class="block text-sm font-medium text-slate-300">{{ __('Discount type') }} <span class="text-red-400">*</span></label>
                     <div class="mt-2 flex gap-3">
-                        <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-white/10 p-3 transition hover:border-cyan-400/30" :class="dtype==='percent' ? 'border-cyan-400/50 bg-cyan-500/10' : ''">
-                            <input type="radio" name="discount_type" value="percent" x-model="dtype" class="accent-cyan-500">
+                        <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-white/10 p-3 transition hover:border-cyan-400/30 discount-type-label" data-type="percent">
+                            <input type="radio" name="discount_type" value="percent" class="accent-cyan-500" checked>
                             <span class="text-sm font-medium">{{ __('Percentage') }}</span>
                         </label>
-                        <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-white/10 p-3 transition hover:border-cyan-400/30" :class="dtype==='fixed' ? 'border-cyan-400/50 bg-cyan-500/10' : ''">
-                            <input type="radio" name="discount_type" value="fixed" x-model="dtype" class="accent-cyan-500">
+                        <label class="flex flex-1 cursor-pointer items-center gap-2 rounded-xl border border-white/10 p-3 transition hover:border-cyan-400/30 discount-type-label" data-type="fixed">
+                            <input type="radio" name="discount_type" value="fixed" class="accent-cyan-500">
                             <span class="text-sm font-medium">{{ __('Fixed amount') }}</span>
                         </label>
                     </div>
 
-                    <div class="mt-3" x-show="dtype==='percent'">
+                    <div class="discount-section discount-section-percent mt-3" style="display: {{ old('discount_type', 'percent') === 'percent' ? 'block' : 'none' }}">
                         <label for="percent_off" class="block text-sm font-medium text-slate-300">{{ __('Percent off (0–100)') }}</label>
                         <input id="percent_off" type="number" name="percent_off" value="{{ old('percent_off') }}"
                             min="0" max="100" step="0.01"
@@ -45,7 +45,7 @@
                         @error('percent_off') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="mt-3" x-show="dtype==='fixed'">
+                    <div class="discount-section discount-section-fixed mt-3" style="display: {{ old('discount_type', 'percent') === 'fixed' ? 'block' : 'none' }}">
                         <label for="amount_off" class="block text-sm font-medium text-slate-300">{{ __('Amount off') }} ({{ $restaurant->currency }})</label>
                         <input id="amount_off" type="number" name="amount_off" value="{{ old('amount_off') }}"
                             min="0" step="0.01"
@@ -91,4 +91,43 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('discountTypeContainer');
+            if (!container) return;
+
+            const labels = container.querySelectorAll('.discount-type-label');
+            const sections = container.querySelectorAll('.discount-section');
+            const radios = container.querySelectorAll('input[name="discount_type"]');
+
+            function updateDisplay() {
+                const checked = container.querySelector('input[name="discount_type"]:checked');
+                const selectedType = checked?.value || 'percent';
+
+                labels.forEach(label => {
+                    const type = label.dataset.type;
+                    if (type === selectedType) {
+                        label.classList.add('border-cyan-400/50', 'bg-cyan-500/10');
+                    } else {
+                        label.classList.remove('border-cyan-400/50', 'bg-cyan-500/10');
+                    }
+                });
+
+                sections.forEach(section => {
+                    if (section.classList.contains(`discount-section-${selectedType}`)) {
+                        section.style.display = 'block';
+                    } else {
+                        section.style.display = 'none';
+                    }
+                });
+            }
+
+            radios.forEach(radio => {
+                radio.addEventListener('change', updateDisplay);
+            });
+
+            updateDisplay();
+        });
+    </script>
 </x-vendor-layout>

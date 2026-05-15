@@ -43,29 +43,29 @@
                 </div>
 
                 {{-- Image --}}
-                <div x-data="{ mode: '{{ $menuItem->image ? 'current' : 'url' }}' }">
+                <div id="imageModeContainer">
                     <label class="block text-sm font-medium text-slate-300">{{ __('Image') }}</label>
                     @if ($menuItem->image)
                         <div class="mt-2 flex items-center gap-3">
                             <img src="{{ $menuItem->image }}" alt="" class="h-16 w-16 rounded-xl object-cover border border-white/10">
                             <div class="flex gap-3 text-xs">
-                                <button type="button" @click="mode='url'" :class="mode==='url' ? 'text-cyan-300 underline' : 'text-slate-400'">{{ __('Change URL') }}</button>
-                                <button type="button" @click="mode='file'" :class="mode==='file' ? 'text-cyan-300 underline' : 'text-slate-400'">{{ __('Upload file') }}</button>
-                                <button type="button" @click="mode='remove'; $refs.imageUrl.value=''" :class="mode==='remove' ? 'text-red-400 underline' : 'text-slate-400'">{{ __('Remove') }}</button>
+                                <button type="button" class="image-mode-btn text-slate-400 mode-url" data-mode="url">{{ __('Change URL') }}</button>
+                                <button type="button" class="image-mode-btn text-slate-400 mode-file" data-mode="file">{{ __('Upload file') }}</button>
+                                <button type="button" class="image-mode-btn text-slate-400 mode-remove" data-mode="remove">{{ __('Remove') }}</button>
                             </div>
                         </div>
                     @else
                         <div class="mt-2 flex gap-3 text-xs">
-                            <button type="button" @click="mode='url'" :class="mode==='url' ? 'text-cyan-300 underline' : 'text-slate-400'">{{ __('URL') }}</button>
-                            <button type="button" @click="mode='file'" :class="mode==='file' ? 'text-cyan-300 underline' : 'text-slate-400'">{{ __('Upload') }}</button>
+                            <button type="button" class="image-mode-btn text-cyan-300 underline mode-url" data-mode="url">{{ __('URL') }}</button>
+                            <button type="button" class="image-mode-btn text-slate-400 mode-file" data-mode="file">{{ __('Upload') }}</button>
                         </div>
                     @endif
 
-                    <div x-show="mode==='url'" class="mt-2">
-                        <input x-ref="imageUrl" name="image_url" value="{{ old('image_url', $menuItem->image) }}"
+                    <div class="image-mode-section image-mode-url mt-2">
+                        <input id="imageUrlInput" name="image_url" value="{{ old('image_url', $menuItem->image) }}"
                             class="w-full ui-field" placeholder="https://…">
                     </div>
-                    <div x-show="mode==='file'" class="mt-2">
+                    <div class="image-mode-section image-mode-file mt-2" style="display:none">
                         <input type="file" name="image_file" accept="image/*"
                             class="w-full text-sm text-slate-400 file:rounded-lg file:border-0 file:bg-cyan-500/20 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-cyan-300">
                         <p class="mt-1 text-[11px] text-slate-500">{{ __('Max 4 MB. JPG, PNG, WEBP.') }}</p>
@@ -105,4 +105,57 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentMode = '{{ $menuItem->image ? 'url' : 'url' }}';
+            const container = document.getElementById('imageModeContainer');
+            const modeButtons = container.querySelectorAll('.image-mode-btn');
+            const modeSections = container.querySelectorAll('.image-mode-section');
+            const imageUrlInput = document.getElementById('imageUrlInput');
+
+            function updateMode(newMode) {
+                currentMode = newMode;
+
+                // Update button styles
+                modeButtons.forEach(btn => {
+                    btn.classList.remove('text-cyan-300', 'underline', 'text-red-400');
+                    btn.classList.add('text-slate-400');
+
+                    if (btn.dataset.mode === newMode) {
+                        btn.classList.remove('text-slate-400');
+                        if (newMode === 'remove') {
+                            btn.classList.add('text-red-400', 'underline');
+                        } else {
+                            btn.classList.add('text-cyan-300', 'underline');
+                        }
+                    }
+                });
+
+                // Show/hide sections
+                modeSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                const activeSection = container.querySelector(`.image-mode-${newMode}`);
+                if (activeSection) {
+                    activeSection.style.display = 'block';
+                }
+
+                // Handle remove mode
+                if (newMode === 'remove') {
+                    imageUrlInput.value = '';
+                }
+            }
+
+            modeButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    updateMode(btn.dataset.mode);
+                });
+            });
+
+            // Initialize
+            updateMode(currentMode);
+        });
+    </script>
 </x-vendor-layout>

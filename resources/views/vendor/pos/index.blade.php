@@ -12,8 +12,7 @@
 <body class="page-kitchen font-hub antialiased h-screen overflow-hidden text-slate-100">
 
 <div
-    x-data="posScreen()"
-    x-init="init()"
+    id="posScreen"
     class="flex h-screen flex-col bg-[#07080f]"
 >
     {{-- ── Top bar ─────────────────────────────── --}}
@@ -28,7 +27,7 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <span x-text="clock" class="font-mono text-lg font-bold text-slate-300"></span>
+            <span id="posScreenClock" class="font-mono text-lg font-bold text-slate-300"></span>
             <a href="{{ route('vendor.kitchen') }}" class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300 transition hover:bg-amber-500/20">
                 🍳 {{ __('Kitchen') }}
             </a>
@@ -47,15 +46,14 @@
             {{-- Category tabs --}}
             <div class="flex items-center gap-1.5 overflow-x-auto border-b border-white/5 bg-slate-950/60 px-4 py-3" style="scrollbar-width:none">
                 <button
-                    @click="activeCategory = null"
-                    :class="activeCategory === null ? 'bg-brand-500 text-white border-brand-500/60' : 'bg-white/5 text-slate-400 border-white/10 hover:border-brand-500/30 hover:text-slate-200'"
-                    class="shrink-0 rounded-xl border px-4 py-2 text-xs font-bold uppercase tracking-wide transition"
+                    id="categoryAll"
+                    class="pos-category-btn shrink-0 rounded-xl border px-4 py-2 text-xs font-bold uppercase tracking-wide transition bg-brand-500 text-white border-brand-500/60"
+                    data-category="all"
                 >{{ __('All') }}</button>
                 @foreach ($categories as $cat)
                     <button
-                        @click="activeCategory = {{ $cat->id }}"
-                        :class="activeCategory === {{ $cat->id }} ? 'bg-brand-500 text-white border-brand-500/60' : 'bg-white/5 text-slate-400 border-white/10 hover:border-brand-500/30 hover:text-slate-200'"
-                        class="shrink-0 rounded-xl border px-4 py-2 text-xs font-bold uppercase tracking-wide transition"
+                        class="pos-category-btn shrink-0 rounded-xl border px-4 py-2 text-xs font-bold uppercase tracking-wide transition bg-white/5 text-slate-400 border-white/10 hover:border-brand-500/30 hover:text-slate-200"
+                        data-category="{{ $cat->id }}"
                     >{{ $cat->name }}</button>
                 @endforeach
             </div>
@@ -63,7 +61,7 @@
             {{-- Search --}}
             <div class="border-b border-white/5 bg-slate-950/40 px-4 py-2">
                 <input
-                    x-model="search"
+                    id="posSearchInput"
                     type="search"
                     placeholder="{{ __('Search items…') }}"
                     class="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:border-brand-500/40 focus:outline-none focus:ring-1 focus:ring-brand-500/25"
@@ -72,13 +70,15 @@
 
             {{-- Items grid --}}
             <div class="kitchen-scrollbar flex-1 overflow-y-auto p-4">
-                <div class="grid grid-cols-3 gap-3 xl:grid-cols-4">
+                <div id="posItemsGrid" class="grid grid-cols-3 gap-3 xl:grid-cols-4">
                     @foreach ($categories as $cat)
                         @foreach ($cat->menuItems as $item)
                             <button
-                                @click="addToCart({{ json_encode(['id' => $item->id, 'name' => $item->name, 'price' => (float)$item->price, 'category_id' => $item->category_id]) }})"
-                                x-show="(activeCategory === null || activeCategory === {{ $cat->id }}) && matchesSearch('{{ addslashes($item->name) }}')"
-                                class="pos-item-card {{ ! $item->is_available ? 'pos-item-card-unavailable' : '' }}"
+                                class="pos-item-card pos-item-card-{{ $cat->id }} {{ ! $item->is_available ? 'pos-item-card-unavailable' : '' }}"
+                                data-item-id="{{ $item->id }}"
+                                data-item='{{ json_encode(['id' => $item->id, 'name' => $item->name, 'price' => (float)$item->price, 'category_id' => $item->category_id]) }}'
+                                data-category-id="{{ $cat->id }}"
+                                data-name="{{ addslashes($item->name) }}"
                                 {{ ! $item->is_available ? 'disabled' : '' }}
                             >
                                 @if ($item->image)
@@ -102,25 +102,13 @@
 
             {{-- Cart items --}}
             <div class="kitchen-scrollbar flex-1 overflow-y-auto p-4 space-y-2">
-                <div x-show="cart.length === 0" class="flex flex-col items-center justify-center gap-3 py-16 text-slate-700">
+                <div id="posEmptyCart" class="flex flex-col items-center justify-center gap-3 py-16 text-slate-700">
                     <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
                     <p class="text-sm font-medium">{{ __('Cart is empty') }}</p>
                     <p class="text-xs text-slate-600">{{ __('Tap items on the left to add') }}</p>
                 </div>
 
-                <template x-for="(line, idx) in cart" :key="idx">
-                    <div class="pos-cart-row">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-slate-200 truncate" x-text="line.name"></p>
-                            <p class="text-xs text-brand-400 font-bold" x-text="'{{ $restaurant->currency }} ' + (line.price * line.qty).toFixed(2)"></p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button @click="decreaseQty(idx)" class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-red-500/20 hover:text-red-400 transition">−</button>
-                            <span class="w-6 text-center text-sm font-bold text-white" x-text="line.qty"></span>
-                            <button @click="increaseQty(idx)" class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-400 transition">+</button>
-                        </div>
-                    </div>
-                </template>
+                <div id="posCartItems"></div>
             </div>
 
             {{-- Order details & totals ─────────── --}}
@@ -130,9 +118,8 @@
                 <div class="grid grid-cols-3 gap-2">
                     @foreach (['dine_in' => ['🍽️', __('Dine In')], 'takeaway' => ['🥡', __('Takeaway')], 'delivery' => ['🛵', __('Delivery')]] as $type => [$icon, $label])
                         <button
-                            @click="orderType = '{{ $type }}'"
-                            :class="orderType === '{{ $type }}' ? 'border-brand-500/60 bg-brand-500/20 text-brand-300' : 'border-white/10 text-slate-500 hover:border-white/20 hover:text-slate-300'"
-                            class="flex flex-col items-center gap-1 rounded-xl border py-2.5 text-xs font-semibold transition"
+                            class="pos-order-type-btn flex flex-col items-center gap-1 rounded-xl border py-2.5 text-xs font-semibold transition border-white/10 text-slate-500 hover:border-white/20 hover:text-slate-300"
+                            data-order-type="{{ $type }}"
                         >
                             <span class="text-base">{{ $icon }}</span>
                             {{ $label }}
@@ -142,62 +129,64 @@
 
                 {{-- Customer info --}}
                 <div class="grid grid-cols-2 gap-2">
-                    <input x-model="customerName" type="text" placeholder="{{ __('Customer name') }}"
+                    <input id="posCustomerName" type="text" placeholder="{{ __('Customer name') }}"
                         class="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-brand-500/40 focus:outline-none">
-                    <input x-model="tableNumber" type="text" placeholder="{{ __('Table #') }}"
+                    <input id="posTableNumber" type="text" placeholder="{{ __('Table #') }}"
                         class="rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-brand-500/40 focus:outline-none">
                 </div>
-                <input x-model="customerNotes" type="text" placeholder="{{ __('Notes for kitchen…') }}"
+                <input id="posCustomerNotes" type="text" placeholder="{{ __('Notes for kitchen…') }}"
                     class="w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:border-brand-500/40 focus:outline-none">
 
                 {{-- Totals --}}
                 <div class="rounded-xl bg-black/20 px-4 py-3 space-y-1.5 text-sm">
                     <div class="flex justify-between text-slate-400">
                         <span>{{ __('Subtotal') }}</span>
-                        <span class="font-mono" x-text="'{{ $restaurant->currency }} ' + subtotal().toFixed(2)"></span>
+                        <span class="font-mono" id="posSubtotal">{{ $restaurant->currency }} 0.00</span>
                     </div>
                     @if ((float)$restaurant->tax_rate_percent > 0)
                         <div class="flex justify-between text-slate-500 text-xs">
                             <span>{{ __('Tax') }} ({{ $restaurant->tax_rate_percent }}%)</span>
-                            <span class="font-mono" x-text="'{{ $restaurant->currency }} ' + tax().toFixed(2)"></span>
+                            <span class="font-mono" id="posTax">{{ $restaurant->currency }} 0.00</span>
                         </div>
                     @endif
                     <div class="flex justify-between border-t border-white/10 pt-2 font-bold text-white">
                         <span>{{ __('Total') }}</span>
-                        <span class="font-mono text-brand-400 text-base" x-text="'{{ $restaurant->currency }} ' + grandTotal().toFixed(2)"></span>
+                        <span class="font-mono text-brand-400 text-base" id="posTotal">{{ $restaurant->currency }} 0.00</span>
                     </div>
                 </div>
 
                 {{-- Submit --}}
                 <button
-                    @click="placeOrder()"
-                    :disabled="cart.length === 0 || isSubmitting"
+                    id="posPlaceOrderBtn"
                     class="btn-orange w-full rounded-2xl py-4 text-base font-extrabold tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled
                 >
-                    <span x-show="!isSubmitting">🧾 {{ __('Place Order') }}</span>
-                    <span x-show="isSubmitting">{{ __('Placing…') }}</span>
+                    <span id="posPlaceOrderText">🧾 {{ __('Place Order') }}</span>
                 </button>
 
                 {{-- Last order toast --}}
                 <div
-                    x-show="lastOrder"
-                    x-transition
+                    id="posLastOrderToast"
                     style="display:none"
                     class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300"
                 >
-                    ✅ {{ __('Order') }} <span class="font-mono font-bold" x-text="'#' + lastOrder"></span> {{ __('placed!') }}
+                    ✅ {{ __('Order') }} <span class="font-mono font-bold" id="posLastOrderNumber"></span> {{ __('placed!') }}
                 </div>
             </div>
         </div>
     </div>
 </div>
+    </div>
+</div>
 
 <script>
-function posScreen() {
+document.addEventListener('DOMContentLoaded', () => {
     const TAX_RATE = {{ (float)($restaurant->tax_rate_percent ?? 0) }} / 100;
     const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+    const CURRENCY = '{{ $restaurant->currency }}';
 
-    return {
+    // State
+    const state = {
         cart: [],
         activeCategory: null,
         search: '',
@@ -207,95 +196,278 @@ function posScreen() {
         tableNumber: '',
         isSubmitting: false,
         lastOrder: null,
-        clock: '',
-
-        init() {
-            this.updateClock();
-            setInterval(() => this.updateClock(), 1000);
-        },
-
-        updateClock() {
-            this.clock = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        },
-
-        matchesSearch(name) {
-            if (!this.search) return true;
-            return name.toLowerCase().includes(this.search.toLowerCase());
-        },
-
-        addToCart(item) {
-            const existing = this.cart.find(l => l.id === item.id);
-            if (existing) {
-                existing.qty++;
-            } else {
-                this.cart.push({ ...item, qty: 1 });
-            }
-        },
-
-        increaseQty(idx) {
-            this.cart[idx].qty++;
-        },
-
-        decreaseQty(idx) {
-            if (this.cart[idx].qty > 1) {
-                this.cart[idx].qty--;
-            } else {
-                this.cart.splice(idx, 1);
-            }
-        },
-
-        subtotal() {
-            return this.cart.reduce((sum, l) => sum + l.price * l.qty, 0);
-        },
-
-        tax() {
-            return Math.round(this.subtotal() * TAX_RATE * 100) / 100;
-        },
-
-        grandTotal() {
-            return this.subtotal() + this.tax();
-        },
-
-        async placeOrder() {
-            if (this.cart.length === 0 || this.isSubmitting) return;
-            this.isSubmitting = true;
-            this.lastOrder = null;
-
-            try {
-                const res = await fetch('{{ route('vendor.pos.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': CSRF,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        order_type: this.orderType,
-                        customer_name: this.customerName || null,
-                        table_number: this.tableNumber || null,
-                        customer_notes: this.customerNotes || null,
-                        items: this.cart.map(l => ({ id: l.id, qty: l.qty })),
-                    }),
-                });
-                const data = await res.json();
-                if (res.ok && data.ok) {
-                    this.lastOrder = data.order_ref;
-                    this.cart = [];
-                    this.customerName = '';
-                    this.tableNumber = '';
-                    this.customerNotes = '';
-                    setTimeout(() => this.lastOrder = null, 5000);
-                } else {
-                    alert(data.message || 'Error placing order');
-                }
-            } catch {
-                alert('Network error');
-            } finally {
-                this.isSubmitting = false;
-            }
-        },
     };
-}
+
+    // DOM elements
+    const clockEl = document.getElementById('posScreenClock');
+    const searchInput = document.getElementById('posSearchInput');
+    const itemsGrid = document.getElementById('posItemsGrid');
+    const emptyCartEl = document.getElementById('posEmptyCart');
+    const cartItemsEl = document.getElementById('posCartItems');
+    const customerNameEl = document.getElementById('posCustomerName');
+    const tableNumberEl = document.getElementById('posTableNumber');
+    const customerNotesEl = document.getElementById('posCustomerNotes');
+    const subtotalEl = document.getElementById('posSubtotal');
+    const taxEl = document.getElementById('posTax');
+    const totalEl = document.getElementById('posTotal');
+    const placeOrderBtn = document.getElementById('posPlaceOrderBtn');
+    const placeOrderText = document.getElementById('posPlaceOrderText');
+    const lastOrderToast = document.getElementById('posLastOrderToast');
+    const lastOrderNumber = document.getElementById('posLastOrderNumber');
+
+    // Update clock
+    function updateClock() {
+        const now = new Date();
+        clockEl.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
+    // Check if item matches search
+    function matchesSearch(name) {
+        if (!state.search) return true;
+        return name.toLowerCase().includes(state.search.toLowerCase());
+    }
+
+    // Filter and display items
+    function updateItemsDisplay() {
+        const items = document.querySelectorAll('.pos-item-card');
+        items.forEach(item => {
+            const categoryId = item.dataset.categoryId;
+            const itemName = item.dataset.name;
+            const isVisible = (state.activeCategory === null || state.activeCategory == categoryId) && matchesSearch(itemName);
+            item.style.display = isVisible ? '' : 'none';
+        });
+    }
+
+    // Update category buttons
+    function updateCategoryButtons() {
+        document.querySelectorAll('.pos-category-btn').forEach(btn => {
+            const isActive = (state.activeCategory === null && btn.dataset.category === 'all') ||
+                            (state.activeCategory == btn.dataset.category && btn.dataset.category !== 'all');
+
+            if (isActive) {
+                btn.classList.remove('bg-white/5', 'text-slate-400', 'border-white/10');
+                btn.classList.add('bg-brand-500', 'text-white', 'border-brand-500/60');
+            } else {
+                btn.classList.remove('bg-brand-500', 'text-white', 'border-brand-500/60');
+                btn.classList.add('bg-white/5', 'text-slate-400', 'border-white/10', 'hover:border-brand-500/30', 'hover:text-slate-200');
+            }
+        });
+    }
+
+    // Update order type buttons
+    function updateOrderTypeButtons() {
+        document.querySelectorAll('.pos-order-type-btn').forEach(btn => {
+            const isActive = btn.dataset.orderType === state.orderType;
+            if (isActive) {
+                btn.classList.remove('border-white/10', 'text-slate-500', 'hover:border-white/20', 'hover:text-slate-300');
+                btn.classList.add('border-brand-500/60', 'bg-brand-500/20', 'text-brand-300');
+            } else {
+                btn.classList.remove('border-brand-500/60', 'bg-brand-500/20', 'text-brand-300');
+                btn.classList.add('border-white/10', 'text-slate-500', 'hover:border-white/20', 'hover:text-slate-300');
+            }
+        });
+    }
+
+    // Add to cart
+    function addToCart(itemJson) {
+        const item = JSON.parse(itemJson);
+        const existing = state.cart.find(l => l.id === item.id);
+        if (existing) {
+            existing.qty++;
+        } else {
+            state.cart.push({ ...item, qty: 1 });
+        }
+        updateCart();
+    }
+
+    // Increase quantity
+    function increaseQty(idx) {
+        if (state.cart[idx]) {
+            state.cart[idx].qty++;
+            updateCart();
+        }
+    }
+
+    // Decrease quantity
+    function decreaseQty(idx) {
+        if (state.cart[idx]) {
+            if (state.cart[idx].qty > 1) {
+                state.cart[idx].qty--;
+            } else {
+                state.cart.splice(idx, 1);
+            }
+            updateCart();
+        }
+    }
+
+    // Calculate subtotal
+    function subtotal() {
+        return state.cart.reduce((sum, l) => sum + l.price * l.qty, 0);
+    }
+
+    // Calculate tax
+    function tax() {
+        return Math.round(subtotal() * TAX_RATE * 100) / 100;
+    }
+
+    // Calculate grand total
+    function grandTotal() {
+        return subtotal() + tax();
+    }
+
+    // Update cart display
+    function updateCart() {
+        // Update cart items HTML
+        if (state.cart.length === 0) {
+            emptyCartEl.style.display = 'flex';
+            cartItemsEl.innerHTML = '';
+        } else {
+            emptyCartEl.style.display = 'none';
+            cartItemsEl.innerHTML = state.cart.map((line, idx) => `
+                <div class="pos-cart-row">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-slate-200 truncate">${line.name}</p>
+                        <p class="text-xs text-brand-400 font-bold">${CURRENCY} ${(line.price * line.qty).toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.posApp.decreaseQty(${idx})" class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-red-500/20 hover:text-red-400 transition">−</button>
+                        <span class="w-6 text-center text-sm font-bold text-white">${line.qty}</span>
+                        <button onclick="window.posApp.increaseQty(${idx})" class="flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-400 transition">+</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Update totals
+        const subtotalValue = subtotal();
+        const taxValue = tax();
+        const totalValue = grandTotal();
+
+        subtotalEl.textContent = `${CURRENCY} ${subtotalValue.toFixed(2)}`;
+        taxEl.textContent = `${CURRENCY} ${taxValue.toFixed(2)}`;
+        totalEl.textContent = `${CURRENCY} ${totalValue.toFixed(2)}`;
+
+        // Update place order button state
+        placeOrderBtn.disabled = state.cart.length === 0 || state.isSubmitting;
+    }
+
+    // Place order
+    async function placeOrder() {
+        if (state.cart.length === 0 || state.isSubmitting) return;
+        state.isSubmitting = true;
+        placeOrderBtn.disabled = true;
+        placeOrderText.textContent = '{{ __('Placing…') }}';
+
+        try {
+            const res = await fetch('{{ route('vendor.pos.store') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': CSRF,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    order_type: state.orderType,
+                    customer_name: state.customerName || null,
+                    table_number: state.tableNumber || null,
+                    customer_notes: state.customerNotes || null,
+                    items: state.cart.map(l => ({ id: l.id, qty: l.qty })),
+                }),
+            });
+            const data = await res.json();
+            if (res.ok && data.ok) {
+                state.lastOrder = data.order_ref;
+                lastOrderNumber.textContent = '#' + data.order_ref;
+                lastOrderToast.style.display = 'block';
+
+                state.cart = [];
+                state.customerName = '';
+                state.tableNumber = '';
+                state.customerNotes = '';
+                customerNameEl.value = '';
+                tableNumberEl.value = '';
+                customerNotesEl.value = '';
+
+                updateCart();
+
+                setTimeout(() => {
+                    lastOrderToast.style.display = 'none';
+                    state.lastOrder = null;
+                }, 5000);
+            } else {
+                alert(data.message || 'Error placing order');
+            }
+        } catch {
+            alert('Network error');
+        } finally {
+            state.isSubmitting = false;
+            placeOrderBtn.disabled = state.cart.length === 0;
+            placeOrderText.textContent = '🧾 {{ __('Place Order') }}';
+        }
+    }
+
+    // Expose functions globally
+    window.posApp = {
+        addToCart,
+        increaseQty,
+        decreaseQty,
+        placeOrder,
+    };
+
+    // Event listeners
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Category buttons
+    document.querySelectorAll('.pos-category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.activeCategory = btn.dataset.category === 'all' ? null : parseInt(btn.dataset.category);
+            updateCategoryButtons();
+            updateItemsDisplay();
+        });
+    });
+
+    // Item buttons
+    document.querySelectorAll('.pos-item-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const itemJson = btn.dataset.item;
+            addToCart(itemJson);
+        });
+    });
+
+    // Search
+    searchInput.addEventListener('input', (e) => {
+        state.search = e.target.value;
+        updateItemsDisplay();
+    });
+
+    // Order type buttons
+    document.querySelectorAll('.pos-order-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.orderType = btn.dataset.orderType;
+            updateOrderTypeButtons();
+        });
+    });
+
+    // Customer info inputs
+    customerNameEl.addEventListener('input', (e) => {
+        state.customerName = e.target.value;
+    });
+    tableNumberEl.addEventListener('input', (e) => {
+        state.tableNumber = e.target.value;
+    });
+    customerNotesEl.addEventListener('input', (e) => {
+        state.customerNotes = e.target.value;
+    });
+
+    // Place order button
+    placeOrderBtn.addEventListener('click', placeOrder);
+
+    // Initial setup
+    updateCategoryButtons();
+    updateOrderTypeButtons();
+    updateCart();
+});
 </script>
 </body>
 </html>

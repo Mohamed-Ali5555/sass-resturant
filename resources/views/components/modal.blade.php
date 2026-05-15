@@ -15,64 +15,121 @@ $maxWidth = [
 @endphp
 
 <div
-    x-data="{
-        show: @js($show),
-        focusables() {
-            // All focusable element types...
-            let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
-            return [...$el.querySelectorAll(selector)]
-                // All non-disabled elements...
-                .filter(el => ! el.hasAttribute('disabled'))
-        },
-        firstFocusable() { return this.focusables()[0] },
-        lastFocusable() { return this.focusables().slice(-1)[0] },
-        nextFocusable() { return this.focusables()[this.nextFocusableIndex()] || this.firstFocusable() },
-        prevFocusable() { return this.focusables()[this.prevFocusableIndex()] || this.lastFocusable() },
-        nextFocusableIndex() { return (this.focusables().indexOf(document.activeElement) + 1) % (this.focusables().length + 1) },
-        prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement)) -1 },
-    }"
-    x-init="$watch('show', value => {
-        if (value) {
-            document.body.classList.add('overflow-y-hidden');
-            {{ $attributes->has('focusable') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
-        } else {
-            document.body.classList.remove('overflow-y-hidden');
-        }
-    })"
-    x-on:open-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
-    x-on:close-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
-    x-on:close.stop="show = false"
-    x-on:keydown.escape.window="show = false"
-    x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
-    x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
-    x-show="show"
+    id="modal-{{ $name }}"
+    data-modal-name="{{ $name }}"
+    data-modal-backdrop
     class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50"
     style="display: {{ $show ? 'block' : 'none' }};"
 >
     <div
-        x-show="show"
+        data-modal-backdrop
         class="fixed inset-0 transform transition-all"
-        x-on:click="show = false"
-        x-transition:enter="ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-    >
-        <div class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm"></div>
-    </div>
+        style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px);"
+    ></div>
 
     <div
-        x-show="show"
         class="glass-panel mb-6 overflow-hidden rounded-2xl shadow-glow transform transition-all sm:w-full {{ $maxWidth }} sm:mx-auto"
-        x-transition:enter="ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-        x-transition:leave="ease-in duration-200"
-        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
     >
         {{ $slot }}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('modal-{{ $name }}');
+        if (!modal) return;
+
+        const modalState = {
+            isOpen: {{ $show ? 'true' : 'false' }},
+            previousActiveElement: null,
+            focusables: [],
+        };
+
+        function updateFocusables() {
+            const focusSelector = 'a, button, input:not([type="hidden"]), textarea, select, details, [tabindex]:not([tabindex="-1"])';
+            modalState.focusables = Array.from(modal.querySelectorAll(focusSelector))
+                .filter(el => !el.hasAttribute('disabled') && !el.hasAttribute('data-modal-backdrop'));
+        }
+
+        function openModal() {
+            if (modalState.isOpen) return;
+            modalState.isOpen = true;
+            modalState.previousActiveElement = document.activeElement;
+            modal.style.display = 'block';
+            document.body.classList.add('overflow-y-hidden');
+            updateFocusables();
+            setTimeout(() => {
+                if (modalState.focusables.length > 0) {
+                    modalState.focusables[0].focus();
+                }
+            }, 100);
+        }
+
+        function closeModal() {
+            if (!modalState.isOpen) return;
+            modalState.isOpen = false;
+            modal.style.display = 'none';
+            document.body.classList.remove('overflow-y-hidden');
+            if (modalState.previousActiveElement) {
+                modalState.previousActiveElement.focus();
+            }
+        }
+
+        function focusNext() {
+            const current = document.activeElement;
+            const currentIndex = modalState.focusables.indexOf(current);
+            const nextIndex = (currentIndex + 1) % modalState.focusables.length;
+            modalState.focusables[nextIndex].focus();
+        }
+
+        function focusPrevious() {
+            const current = document.activeElement;
+            const currentIndex = modalState.focusables.indexOf(current);
+            const prevIndex = currentIndex - 1 < 0 ? modalState.focusables.length - 1 : currentIndex - 1;
+            modalState.focusables[prevIndex].focus();
+        }
+
+        // Backdrop click
+        const backdrop = modal.querySelector('[data-modal-backdrop]');
+        if (backdrop) {
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Keyboard events
+        document.addEventListener('keydown', (e) => {
+            if (!modalState.isOpen) return;
+
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    focusPrevious();
+                } else {
+                    focusNext();
+                }
+            }
+        });
+
+        // Listen for window events
+        window.addEventListener('open-modal', (e) => {
+            if (e.detail === '{{ $name }}') {
+                openModal();
+            }
+        });
+
+        window.addEventListener('close-modal', (e) => {
+            if (e.detail === '{{ $name }}') {
+                closeModal();
+            }
+        });
+
+        // Allow triggering via data attributes
+        window['openModal_{{ $name }}'] = openModal;
+        window['closeModal_{{ $name }}'] = closeModal;
+    });
+</script>
