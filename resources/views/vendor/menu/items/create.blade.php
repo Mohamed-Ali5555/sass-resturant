@@ -44,16 +44,16 @@
                 </div>
 
                 {{-- Image --}}
-                <div x-data="{ mode: 'url' }">
+                <div id="image-mode-switcher" data-image-mode="url">
                     <label class="block text-sm font-medium text-slate-300">{{ __('Image') }}</label>
                     <div class="mt-2 flex gap-3 text-xs">
-                        <button type="button" @click="mode='url'" :class="mode==='url' ? 'text-cyan-300 underline' : 'text-slate-400'">{{ __('URL') }}</button>
-                        <button type="button" @click="mode='file'" :class="mode==='file' ? 'text-cyan-300 underline' : 'text-slate-400'">{{ __('Upload file') }}</button>
+                        <button type="button" id="image-mode-url" class="text-cyan-300 underline">{{ __('URL') }}</button>
+                        <button type="button" id="image-mode-file" class="text-slate-400">{{ __('Upload file') }}</button>
                     </div>
-                    <div x-show="mode==='url'" class="mt-2">
+                    <div id="image-mode-url-panel" class="mt-2">
                         <input name="image_url" value="{{ old('image_url') }}" class="w-full ui-field" placeholder="https://…">
                     </div>
-                    <div x-show="mode==='file'" class="mt-2">
+                    <div id="image-mode-file-panel" class="mt-2 hidden">
                         <input type="file" name="image_file" accept="image/*"
                             class="w-full text-sm text-slate-400 file:rounded-lg file:border-0 file:bg-cyan-500/20 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-cyan-300">
                         <p class="mt-1 text-[11px] text-slate-500">{{ __('Max 4 MB. JPG, PNG, WEBP.') }}</p>
@@ -61,6 +61,36 @@
                 </div>
 
                 <div class="space-y-2">
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const urlButton = document.getElementById('image-mode-url');
+                        const fileButton = document.getElementById('image-mode-file');
+                        const urlPanel = document.getElementById('image-mode-url-panel');
+                        const filePanel = document.getElementById('image-mode-file-panel');
+
+                        if (!urlButton || !fileButton || !urlPanel || !filePanel) {
+                            return;
+                        }
+
+                        function setMode(mode) {
+                            urlPanel.hidden = mode !== 'url';
+                            filePanel.hidden = mode !== 'file';
+
+                            urlButton.classList.toggle('text-cyan-300', mode === 'url');
+                            urlButton.classList.toggle('underline', mode === 'url');
+                            urlButton.classList.toggle('text-slate-400', mode !== 'url');
+
+                            fileButton.classList.toggle('text-cyan-300', mode === 'file');
+                            fileButton.classList.toggle('underline', mode === 'file');
+                            fileButton.classList.toggle('text-slate-400', mode !== 'file');
+                        }
+
+                        urlButton.addEventListener('click', () => setMode('url'));
+                        fileButton.addEventListener('click', () => setMode('file'));
+
+                        setMode('url');
+                    });
+                </script>
                     <div class="flex items-center gap-2">
                         <input type="hidden" name="track_inventory" value="0">
                         <input id="track_inventory" type="checkbox" name="track_inventory" value="1" class="rounded border-cyan-400/35 bg-slate-950/40 accent-cyan-500" @checked(old('track_inventory'))>

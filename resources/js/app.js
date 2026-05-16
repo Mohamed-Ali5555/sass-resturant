@@ -1,7 +1,4 @@
 import './bootstrap';
+import { initializeComponents } from './components';
 
-import Alpine from 'alpinejs';
-
-window.Alpine = Alpine;
-
-Alpine.start();
+initializeComponents();
