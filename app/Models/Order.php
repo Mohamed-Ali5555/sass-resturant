@@ -93,4 +93,17 @@ class Order extends Model
     {
         return $this->hasOne(DriverAssignment::class);
     }
+
+    /**
+     * Restore inventory for all items in this order (for cancellations)
+     */
+    public function restoreInventory(): void
+    {
+        foreach ($this->orderItems as $item) {
+            $menuItem = $item->menuItem;
+            if ($menuItem) {
+                $menuItem->restoreInventory($item->qty);
+            }
+        }
+    }
 }

@@ -95,10 +95,13 @@
                 <div class="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
                     <div class="flex gap-3">
                         <a href="{{ route('vendor.menu.items.qr-print', $menuItem) }}" target="_blank" class="text-xs text-cyan-400 hover:underline">{{ __('Print QR card') }}</a>
-                        <form method="post" action="{{ route('vendor.menu.items.destroy', $menuItem) }}" onsubmit="return confirm('{{ __('Delete this item?') }}')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-xs font-medium text-red-400 hover:text-red-200">{{ __('Delete') }}</button>
-                        </form>
+                        <button
+                            type="button"
+                            class="text-xs font-medium text-red-400 hover:text-red-200"
+                            onclick="if(confirm('{{ __('Delete this item?') }}')){ const f=document.createElement('form'); f.method='post'; f.action='{{ route('vendor.menu.items.destroy', $menuItem) }}'; const csrf=document.createElement('input'); csrf.type='hidden'; csrf.name='_token'; csrf.value='{{ csrf_token() }}'; f.appendChild(csrf); const m=document.createElement('input'); m.type='hidden'; m.name='_method'; m.value='DELETE'; f.appendChild(m); document.body.appendChild(f); f.submit(); }"
+                        >
+                            {{ __('Delete') }}
+                        </button>
                     </div>
                     <button type="submit" class="btn-neon rounded-xl px-5 py-2 text-sm font-semibold">{{ __('Save changes') }}</button>
                 </div>

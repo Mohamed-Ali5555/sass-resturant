@@ -43,7 +43,11 @@
                                         $value = call_user_func($col['format'], $value, $row);
                                     }
                                 @endphp
-                                <td class="px-6 py-4 text-slate-300">{{ $value ?? '—' }}</td>
+                                @if (is_array($col) && isset($col['format']))
+                                    <td class="px-6 py-4 text-slate-300">{!! $value ?? '—' !!}</td>
+                                @else
+                                    <td class="px-6 py-4 text-slate-300">{{ $value ?? '—' }}</td>
+                                @endif
                             @endforeach
                             @if (count($actions) > 0)
                                 <td class="px-6 py-4 text-right">
@@ -121,7 +125,11 @@
                         @endphp
                         <div class="flex items-center justify-between gap-2">
                             <span class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $label }}</span>
-                            <span class="text-sm text-slate-200">{{ $value ?? '—' }}</span>
+                            @if (is_array($col) && isset($col['format']))
+                                <span class="text-sm text-slate-200">{!! $value ?? '—' !!}</span>
+                            @else
+                                <span class="text-sm text-slate-200">{{ $value ?? '—' }}</span>
+                            @endif
                         </div>
                     @endforeach
                 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\RoleName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +29,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        // If user is kitchen staff, redirect to kitchen display
+        if ($user->hasRole(RoleName::KitchenStaff->value)) {
+            return redirect()->intended(route('vendor.kitchen', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -45,3 +53,4 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 }
+

@@ -54,4 +54,23 @@ class VendorOrderController extends Controller
 
         return back()->with('status', 'Order updated.');
     }
+
+    public function cancel(Request $request, Order $order): RedirectResponse
+    {
+        /** @var Restaurant $restaurant */
+        $restaurant = $request->attributes->get('vendorRestaurant');
+        abort_unless((int) $order->restaurant_id === (int) $restaurant->getKey(), 404);
+
+        $this->authorize('delete', $order);
+
+        // Restore inventory for all items
+        $order->restoreInventory();
+
+        // Update order status to cancelled
+        $order->update([
+            'status' => OrderStatus::Canceled,
+        ]);
+
+        return back()->with('status', 'Order cancelled and inventory restored.');
+    }
 }

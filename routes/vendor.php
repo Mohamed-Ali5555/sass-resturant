@@ -61,6 +61,7 @@ Route::middleware(['auth', 'active', 'vendor.panel', EnsureVendorRestaurantSessi
         Route::get('/orders', [VendorOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [VendorOrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/status', [VendorOrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('/orders/{order}/cancel', [VendorOrderController::class, 'cancel'])->name('orders.cancel');
 
         Route::get('/menu/categories', [VendorMenuCategoryController::class, 'index'])->name('menu.categories.index');
         Route::get('/menu/categories/create', [VendorMenuCategoryController::class, 'create'])->name('menu.categories.create');

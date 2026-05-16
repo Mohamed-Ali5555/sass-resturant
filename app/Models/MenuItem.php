@@ -61,4 +61,31 @@ class MenuItem extends Model
     {
         return $this->hasMany(Favorite::class, 'product_id');
     }
+
+    /**
+     * Deduct stock quantity from item
+     */
+    public function deductInventory(int $qty): bool
+    {
+        if (!$this->track_inventory) {
+            return true;
+        }
+
+        if ($this->stock_qty < $qty) {
+            return false;
+        }
+
+        $this->decrement('stock_qty', $qty);
+        return true;
+    }
+
+    /**
+     * Restore stock quantity to item (for cancelled orders)
+     */
+    public function restoreInventory(int $qty): void
+    {
+        if ($this->track_inventory) {
+            $this->increment('stock_qty', $qty);
+        }
+    }
 }

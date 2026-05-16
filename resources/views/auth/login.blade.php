@@ -118,6 +118,21 @@
                 </div>
             </button>
 
+            {{-- Kitchen Staff --}}
+            <button type="button"
+                onclick="demoLogin('kitchen@demo.local')"
+                class="group relative flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-950/30 px-3 py-2.5 text-left transition-all duration-200 hover:border-orange-400/60 hover:bg-orange-900/40 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500/50">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500/20 text-orange-300 group-hover:bg-orange-500/30">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </span>
+                <div class="min-w-0">
+                    <p class="text-xs font-semibold text-orange-200">Kitchen Staff</p>
+                    <p class="truncate text-[10px] text-slate-500">kitchen@demo.local</p>
+                </div>
+            </button>
+
             {{-- Customer --}}
             <button type="button"
                 onclick="demoLogin('customer@demo.local')"

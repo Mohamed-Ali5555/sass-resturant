@@ -5,38 +5,35 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @php
+                $columns = [
+                    ['key' => 'owner_scope', 'label' => __('Scope')],
+                    ['key' => 'restaurant.name', 'label' => __('Restaurant'), 'format' => fn($v) => $v ?? '—'],
+                    ['key' => 'driver', 'label' => __('Driver')],
+                    ['key' => 'enabled', 'label' => __('Status'), 'format' => fn($v) => $v ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-300">✓</span>' : '<span class="inline-flex items-center gap-1 rounded-full bg-slate-500/20 px-2 py-1 text-xs font-medium text-slate-300">✗</span>'],
+                    ['key' => 'public_key_masked', 'label' => __('Public Key'), 'format' => fn($v) => Str::limit($v ?? '—', 24)],
+                ];
 
-            <div class="glass-panel overflow-hidden p-6 sm:rounded-2xl">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-slate-500">
-                                <th class="py-2 pr-4">{{ __('Scope') }}</th>
-                                <th class="py-2 pr-4">{{ __('Restaurant') }}</th>
-                                <th class="py-2 pr-4">{{ __('Driver') }}</th>
-                                <th class="py-2 pr-4">{{ __('Enabled') }}</th>
-                                <th class="py-2 pr-4">{{ __('Public key (masked)') }}</th>
-                                <th class="py-2 pr-4"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-cyan-500/15">
-                            @foreach ($configs as $cfg)
-                                <tr>
-                                    <td class="py-2 pr-4">{{ $cfg->owner_scope }}</td>
-                                    <td class="py-2 pr-4">{{ $cfg->restaurant?->name ?? '—' }}</td>
-                                    <td class="py-2 pr-4">{{ $cfg->driver }}</td>
-                                    <td class="py-2 pr-4">{{ $cfg->enabled ? __('Yes') : __('No') }}</td>
-                                    <td class="py-2 pr-4 font-mono text-xs">{{ $cfg->public_key_masked ?? '—' }}</td>
-                                    <td class="py-2 pr-4">
-                                        <a href="{{ route('admin.payment-gateways.edit', $cfg) }}" class="text-cyan-300 hover:text-cyan-100 hover:underline">{{ __('Edit') }}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <div class="mt-4">{{ $configs->links() }}</div>
-            </div>
+                $actions = [
+                    [
+                        'label' => __('Edit'),
+                        'route' => fn($row) => route('admin.payment-gateways.edit', $row),
+                        'icon' => '<path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />',
+                        'class' => 'text-cyan-400 hover:text-cyan-300',
+                        'mobile_class' => 'bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30',
+                    ],
+                ];
+            @endphp
+
+            <x-data-table
+                :columns="$columns"
+                :rows="$configs"
+                :actions="$actions"
+            >
+                <x-slot name="footer">
+                    <div class="mt-6">{{ $configs->links() }}</div>
+                </x-slot>
+            </x-data-table>
         </div>
     </div>
 </x-admin-layout>

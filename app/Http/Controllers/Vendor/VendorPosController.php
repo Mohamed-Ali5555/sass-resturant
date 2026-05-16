@@ -58,6 +58,20 @@ class VendorPosController extends Controller
             return response()->json(['message' => __('Invalid menu item.')], 422);
         }
 
+        // Validate stock availability for tracked items
+        foreach ($validated['items'] as $line) {
+            $item = $menuItems->get($line['id']);
+            if ($item->track_inventory && $item->stock_qty < $line['qty']) {
+                return response()->json([
+                    'message' => __('Insufficient stock for :item. Available: :available, Requested: :requested', [
+                        'item' => $item->name,
+                        'available' => $item->stock_qty,
+                        'requested' => $line['qty'],
+                    ]),
+                ], 422);
+            }
+        }
+
         $subtotal = 0.0;
         $lineItems = [];
         foreach ($validated['items'] as $line) {
@@ -94,6 +108,14 @@ class VendorPosController extends Controller
 
         foreach ($lineItems as $li) {
             $order->orderItems()->create($li);
+        }
+
+        // Deduct inventory from stock for tracked items
+        foreach ($validated['items'] as $line) {
+            $item = $menuItems->get($line['id']);
+            if ($item->track_inventory) {
+                $item->decrement('stock_qty', $line['qty']);
+            }
         }
 
         return response()->json([

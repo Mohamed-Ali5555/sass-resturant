@@ -82,13 +82,21 @@
                                 {{ ! $item->is_available ? 'disabled' : '' }}
                             >
                                 @if ($item->image)
-                                    <img src="{{ $item->image }}" alt="{{ $item->name }}" class="h-16 w-full rounded-xl object-cover">
+                                    <div class="relative overflow-hidden rounded-xl h-36 w-full">
+                                        <img src="{{ $item->image }}" alt="{{ $item->name }}" class="h-full w-full object-cover">
+                                        <div class="absolute inset-0 rounded-xl bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                        <div class="absolute left-3 bottom-3">
+                                            <span class="inline-flex items-center rounded-full bg-black/60 px-3 py-1 text-sm font-bold text-white">{{ $restaurant->currency }} {{ number_format((float)$item->price,2) }}</span>
+                                        </div>
+                                    </div>
                                 @else
                                     <div class="flex h-16 w-full items-center justify-center rounded-xl bg-brand-500/10 text-2xl">🍽️</div>
                                 @endif
-                                <div class="w-full">
-                                    <p class="text-xs font-semibold leading-tight text-slate-200">{{ $item->name }}</p>
-                                    <p class="mt-0.5 text-sm font-bold text-brand-400">{{ $restaurant->currency }} {{ number_format((float)$item->price, 2) }}</p>
+                                <div class="w-full mt-2">
+                                    <p class="text-sm font-semibold leading-tight text-slate-200 line-clamp-1">{{ $item->name }}</p>
+                                    @unless ($item->image)
+                                        <p class="mt-0.5 text-sm font-bold text-brand-400">{{ $restaurant->currency }} {{ number_format((float)$item->price, 2) }}</p>
+                                    @endunless
                                 </div>
                             </button>
                         @endforeach
